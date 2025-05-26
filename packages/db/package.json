@@ -1,0 +1,22 @@
+{
+  "name": "@monorepo/db",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "dev": "bun --watch db.js",
+    "build": "bun build --outdir=dist db.js",
+    "start": "bun run build && bun dist/db.js"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "exports": {
+    ".": "./db.js"
+  },
+  "dependencies": {
+    "mongoose": "^8.15.0"
+  }
+}
