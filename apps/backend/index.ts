@@ -9,13 +9,27 @@ import type { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "./utils/index.ts";
 import db from "@monorepo/db";
 import MonitorRoutes from "./middleware/monitor.ts";
-import { testingRouter, userRouter } from "./routes/index.ts";
+import { OAuthRouter, testingRouter, userRouter } from "./routes/index.ts";
+import session from "express-session";
+import passport from "passport";
 const app = express();
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 15 minutes
   limit: 75,
   message: "Too many requests from this IP, please try again after 10 minutes",
 });
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }, // Set to true if using HTTPS
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(MonitorRoutes);
 app.use(helmet());
@@ -62,6 +76,7 @@ app.get("/", (req: Request, res: Response) => {
     })
   );
 });
+app.use("/api/oauth", OAuthRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/test", testingRouter);
 app.use((req: Request, res: Response) => {

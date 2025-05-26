@@ -2,7 +2,7 @@ import { ApiResponse } from "../utils/index.ts";
 import User from "../models/user.models.ts";
 import type { UserType } from "../models/user.models.ts";
 import type { Request, Response } from "express";
-
+import sendEmail from "../utils/EmailSender.ts";
 const generateAccessToken = async (user: UserType | any): Promise<void> => {
   const userId = user._id.toString()!;
   if (!userId) {
@@ -45,6 +45,13 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
     }
 
     const token = await generateAccessToken(createdUser);
+
+    //TODO: Send verification email to user
+    await sendEmail(
+      createdUser.email,
+      "Please verify your email",
+      "confirmation"
+    );
     res.status(200).json(
       new ApiResponse(200, "User created successfully", {
         user: createdUser,
@@ -60,6 +67,40 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
         new ApiResponse(200, error.message || "Internal Server Error", null)
       );
     return;
+  }
+};
+const verifyUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user._id;
+    if (!userId) {
+      res.status(400).json(new ApiResponse(400, "User ID is required", null));
+      return;
+    }
+
+    const dbUser = await User.findById(userId);
+    if (!dbUser) {
+      res.status(404).json(new ApiResponse(404, "User not found", null));
+      return;
+    }
+
+    const updateUser = await User.findByIdAndUpdate(
+      dbUser._id,
+      {
+        isVerified: true,
+      },
+      { new: true }
+    );
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, "User verified successfully", updateUser));
+  } catch (error: Error | any) {
+    console.log(error);
+    res
+      .status(500)
+      .json(
+        new ApiResponse(500, error.message || "Internal Server Error", null)
+      );
   }
 };
 const loginUser = async (req: Request, res: Response): Promise<void> => {
@@ -197,6 +238,7 @@ export {
   updateUserInformation,
   getUserInformation,
   deleteUser,
+  verifyUser,
 };
 
 //TODO: NEXT_AUTH OR PASSPORT JS for google signups
