@@ -5,7 +5,6 @@ export interface UserType extends Document {
   name: string;
   email: string;
   password: string;
-  phoneNumber?: string;
   address?: string;
   accessToken?: string;
   isVerified?: boolean;
@@ -34,11 +33,6 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
-    },
-    phoneNumber: {
-      type: String,
-      unique: true,
-      match: /^\+?[1-9]\d{1,14}$/,
     },
     address: {
       type: String,

@@ -9,7 +9,7 @@ import type { NextFunction, Request, Response } from "express";
 import { ApiResponse } from "./utils/index.ts";
 import db from "@monorepo/db";
 import MonitorRoutes from "./middleware/monitor.ts";
-import { userRouter } from "./routes/index.ts";
+import { testingRouter, userRouter } from "./routes/index.ts";
 const app = express();
 const limiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 15 minutes
@@ -63,6 +63,7 @@ app.get("/", (req: Request, res: Response) => {
   );
 });
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/test", testingRouter);
 app.use((req: Request, res: Response) => {
   res.status(404).json({
     status: 404,
